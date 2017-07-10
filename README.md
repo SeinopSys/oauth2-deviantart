@@ -15,9 +15,22 @@ $ composer require seinopsys/oauth2-deviantart
 You can get your OAuth client credentials [here](https://www.deviantart.com/developers/apps).
 
 ```php
-$provider = new DeviantArtProvider([
+$provider = new SeinopSys\OAuth2\Client\Provider\DeviantArtProvider([
 	'clientId' => 'client_id',
 	'clientSecret' => 'client_secret',
 	'redirectUri' => 'http://example.com/auth',
+]);
+
+$accessToken = $provider->getAccessToken('authorization_code', [
+	'code' => $_GET['code'],
+	'scope' => ['user','browse'] // optional, defaults to ['user']
+]);
+$actualToken = $accessToken->getToken();
+$refreshToken = $accessToken->getRefresh();
+
+// Once it expires
+
+$newAccessToken = $provider->getAccessToken('refresh_token', [
+	'refresh_token' => $refreshToken
 ]);
 ```
