@@ -3,7 +3,7 @@
 namespace SeinopSys\OAuth2\Client\Tests\Provider;
 
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\BadResponseException;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use Mockery;
 use PHPUnit\Framework\TestCase;
@@ -68,12 +68,12 @@ class DeviantArtTest extends TestCase {
 		$client = Mockery::mock(ClientInterface::class);
 		$client->shouldReceive('send')->once()->andReturn($response);
 		$this->provider->setHttpClient($client);
-		$this->expectException(BadResponseException::class);
+		$this->expectException(IdentityProviderException::class);
 		$token = $this->provider->getAccessToken('authorization_code', ['code' => 'mock_authorization_code']);
 	}
 
 	/**
-	 * @expectedException League\OAuth2\Client\Provider\Exception\IdentityProviderException
+	 * @expectedException \League\OAuth2\Client\Provider\Exception\IdentityProviderException
 	 */
 	public function testExceptionThrownWhenErrorObjectReceived(){
 		$message = uniqid();

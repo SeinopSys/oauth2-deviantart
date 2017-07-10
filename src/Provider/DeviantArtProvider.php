@@ -102,41 +102,21 @@ class DeviantArtProvider extends AbstractProvider {
 	}
 
 	/**
-	 * Temporarily stores the last request in case there's an error
-	 *
-	 * @var RequestInterface
-	 */
-	private $_lastRequest;
-
-	/**
-	 * Sends a request instance and returns a response instance.
-	 * WARNING: This method does not attempt to catch exceptions caused by HTTP
-	 * errors! It is recommended to wrap this method in a try/catch block.
-	 *
-	 * @param  RequestInterface $request
-	 *
-	 * @return ResponseInterface
-	 */
-	public function getResponse(RequestInterface $request){
-		$this->_lastRequest = $request;
-		return parent::getResponse($request);
-	}
-
-	/**
 	 * Parses the response according to its content-type header.
 	 *
 	 * @param  ResponseInterface $response
 	 *
 	 * @return array
-	 * @throws BadResponseException
+	 * @throws IdentityProviderException
 	 * @throws UnexpectedValueException
 	 */
 	protected function parseResponse(ResponseInterface $response){
-		if ($response->getStatusCode() > 500){
-            throw new BadResponseException(
+		$statusCode = $response->getStatusCode();
+		if ($statusCode > 500){
+            throw new IdentityProviderException(
                 'The OAuth server returned an unexpected response',
-                $this->_lastRequest,
-                $response
+                $statusCode,
+                $response->getBody()
             );
 		}
 
