@@ -26,7 +26,7 @@ $accessToken = $provider->getAccessToken('authorization_code', [
 	'scope' => ['user','browse'] // optional, defaults to ['user']
 ]);
 $actualToken = $accessToken->getToken();
-$refreshToken = $accessToken->getRefresh();
+$refreshToken = $accessToken->getRefreshToken();
 
 // Once it expires
 
@@ -34,3 +34,32 @@ $newAccessToken = $provider->getAccessToken('refresh_token', [
 	'refresh_token' => $refreshToken
 ]);
 ```
+
+### PKCE
+
+DeviantArt requires [PKCE](https://oauth.net/2/pkce/) for newly registered applications; without it the
+authorization page fails with *"The code_challenge parameter is required."* Enable it with the `pkceMethod`
+option (requires `league/oauth2-client` 2.7+), and keep the generated code verifier until the callback:
+
+```php
+$provider = new SeinopSys\OAuth2\Client\Provider\DeviantArtProvider([
+	'clientId' => 'client_id',
+	'clientSecret' => 'client_secret',
+	'redirectUri' => 'http://example.com/auth',
+	'pkceMethod' => SeinopSys\OAuth2\Client\Provider\DeviantArtProvider::PKCE_METHOD_S256,
+]);
+
+// Starting the flow
+$authUrl = $provider->getAuthorizationUrl();
+$_SESSION['oauth2state'] = $provider->getState();
+$_SESSION['oauth2pkceCode'] = $provider->getPkceCode();
+header("Location: $authUrl");
+
+// In the callback, after checking the state
+$provider->setPkceCode($_SESSION['oauth2pkceCode']);
+$accessToken = $provider->getAccessToken('authorization_code', [
+	'code' => $_GET['code'],
+]);
+```
+
+PKCE is off by default, so existing integrations that don't store the verifier keep working unchanged.
